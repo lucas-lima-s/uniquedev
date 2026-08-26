@@ -1,10 +1,12 @@
-# uniquedev
+# Haven
 
-[![CI](https://github.com/lucas-lima-s/uniquedev/actions/workflows/ci.yml/badge.svg)](https://github.com/lucas-lima-s/uniquedev/actions/workflows/ci.yml)
+[![CI](https://github.com/lucas-lima-s/haven-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/lucas-lima-s/haven-finance/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A small personal monorepo: a portfolio hub at the domain root, and **Haven**,
-a self-hosted personal finance app for Open Finance Brasil, at `/haven/`.
+A self-hosted personal finance app for Open Finance Brasil: bank sync
+through a pluggable provider, a month projection that counts committed
+money (not just past spend), budgets, planned purchases and investment
+tracking, all in integer cents.
 
 ![Haven dashboard, synthetic demo data](docs/screenshots/dashboard.png)
 
@@ -42,9 +44,8 @@ already on the hook for" is the number that matters for planning ahead.
 ```mermaid
 flowchart LR
     Browser -->|HTTPS| Caddy
-    Caddy -->|"/"| Portfolio["Portfolio hub (static)"]
-    Caddy -->|"/haven/*"| Web["Haven web (React SPA)"]
-    Caddy -->|"/haven/api/*"| API["Haven API (Fastify)"]
+    Caddy -->|"/"| Web["Haven web (React SPA)"]
+    Caddy -->|"/api/*"| API["Haven API (Fastify)"]
     API --> DB[(Postgres)]
     API --> Provider["Bank data provider\n(pluggy | mock)"]
     Provider -.->|webhook| API
@@ -61,7 +62,7 @@ the webhook lifecycle, and the projection engine in detail.
   cents, never a float, from the database column to the API response to the
   UI. `reaisToCents` is the one place a decimal amount gets converted, and
   it rounds explicitly.
-- **The projection engine is a pure package.** `haven/shared`'s projection
+- **The projection engine is a pure package.** `packages/shared`'s projection
   code has no framework dependency, is unit tested in isolation, and is
   imported verbatim by both the API and the web app — there is exactly one
   implementation of "what does this month look like".
@@ -79,15 +80,15 @@ the webhook lifecycle, and the projection engine in detail.
 ## Quick start (demo mode, no accounts needed)
 
 ```bash
-git clone https://github.com/lucas-lima-s/uniquedev.git
-cd uniquedev
+git clone https://github.com/lucas-lima-s/haven-finance.git
+cd haven-finance
 cp .env.example .env
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-docker compose run --rm haven-api node dist/migrate.js
-docker compose run --rm haven-api node dist/seed/demo.js
+docker compose run --rm api node dist/migrate.js
+docker compose run --rm api node dist/seed/demo.js
 ```
 
-Open `http://localhost:8080/haven/`. The default `DATA_PROVIDER=mock`
+Open `http://localhost:8080/`. The default `DATA_PROVIDER=mock`
 serves a seeded, deterministic demo dataset (two fictional institutions,
 ~180 transactions, five investments) — nothing here talks to the internet
 or to a real bank.
@@ -97,10 +98,10 @@ or to a real bank.
 ```bash
 pnpm install
 cp .env.example .env
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d haven-db   # Postgres on 127.0.0.1:55433
-pnpm dev:haven-shared           # rebuilds haven/shared/dist on change; api and web import from dist
-pnpm dev:haven-api              # http://localhost:3000, loads ../../.env
-pnpm dev:haven-web              # http://localhost:5173/haven/, proxies /haven/api to :3000
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db   # Postgres on 127.0.0.1:55433
+pnpm dev:shared                 # rebuilds packages/shared/dist on change; api and web import from dist
+pnpm dev:api                    # http://localhost:3000, loads ../../.env
+pnpm dev:web                    # http://localhost:5173/, proxies /api to :3000
 pnpm test
 pnpm typecheck
 pnpm lint
@@ -120,9 +121,9 @@ fixed identity instead of verifying a proxy JWT, and is refused whenever
    `dashboard.pluggy.ai`.
 2. Generate a webhook secret (`openssl rand -hex 32`) into `WEBHOOK_SECRET`,
    and set `WEBHOOK_PUBLIC_URL` to a URL your deployment is reachable at,
-   for example `https://your-domain.example/haven/api/webhooks?token=<secret>`.
+   for example `https://your-domain.example/api/webhooks?token=<secret>`.
    Register that URL with the data provider.
-3. Open `/haven/conectar` and connect an account through the widget. The
+3. Open `/conectar` and connect an account through the widget. The
    connection id is captured from both the widget callback and the
    `item/created` webhook.
 
@@ -134,12 +135,12 @@ wire `AUTH_MODE=proxy` to an identity-aware proxy of your choice.
 
 ## Testing
 
-- `haven/shared`: unit tests for money math, month math, and every
+- `packages/shared`: unit tests for money math, month math, and every
   projection rule (recurring rollover, installment rounding, budget usage).
-- `haven/api`: an integration suite against a real Postgres instance —
+- `packages/api`: an integration suite against a real Postgres instance —
   authentication in both modes, the webhook secret gate, every CRUD route,
   and a fixed-seed dashboard assertion.
-- `haven/web`: a smoke suite for the API client, the app shell, and the
+- `packages/web`: a smoke suite for the API client, the app shell, and the
   dashboard page against a stubbed fetch.
 - CI additionally runs a full Docker Compose smoke test against the demo
   dataset, asserting the health, dashboard, and SPA endpoints all respond.
@@ -148,12 +149,11 @@ wire `AUTH_MODE=proxy` to an identity-aware proxy of your choice.
 
 | Path | What |
 |---|---|
-| `portfolio/` | Static hub page served at the domain root, linking the rest of the published repositories. |
-| `haven/api` | `@uniquedev/haven-api`. Fastify API: verifies the proxy identity, talks to the active data provider, owns the Haven database. |
-| `haven/web` | `@uniquedev/haven-web`. Vite + React SPA built with `base: /haven/`, served as static files by Caddy. |
-| `haven/shared` | `@uniquedev/haven-shared`. Zod schemas, money helpers and the projection engine shared by api and web. |
-| `infra/caddy` | Caddyfile and the Caddy image, bundling the portfolio hub and the Haven web build. |
-| `docker-compose.yml` | The whole stack, pinned to the project name `uniquedev` so volumes do not depend on the checkout path. |
+| `packages/api` | `@haven/api`. Fastify API: verifies the proxy identity, talks to the active data provider, owns the Haven database. |
+| `packages/web` | `@haven/web`. Vite + React SPA built at the domain root, served as static files by Caddy. |
+| `packages/shared` | `@haven/shared`. Zod schemas, money helpers and the projection engine shared by api and web. |
+| `infra/caddy` | Caddyfile (root path) and Caddyfile.subpath (mounting Haven under a prefix), plus the Caddy image build. |
+| `docker-compose.yml` | The whole stack, pinned to the project name `haven` so volumes do not depend on the checkout path. |
 
 ## License
 

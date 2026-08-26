@@ -40,6 +40,6 @@ This is a personal project without a dedicated security team. If you find a
 vulnerability, please open a private report through GitHub's
 ["Report a vulnerability"](../../security/advisories/new) flow on this
 repository instead of a public issue. Include reproduction steps and the
-affected component (`haven/api`, `haven/web`, `haven/shared`, `infra/caddy`).
+affected component (`packages/api`, `packages/web`, `packages/shared`, `infra/caddy`).
 There is no bug bounty; a fix or an acknowledgement should follow within a
 reasonable timeframe on a best-effort basis.

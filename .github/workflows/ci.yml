@@ -22,10 +22,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm --filter @uniquedev/haven-shared build
+      - run: pnpm --filter @haven/shared build
       - run: pnpm typecheck
-      - run: pnpm --filter @uniquedev/haven-shared test
-      - run: pnpm --filter @uniquedev/haven-web test
+      - run: pnpm --filter @haven/shared test
+      - run: pnpm --filter @haven/web test
       - run: pnpm build
 
   api-tests:
@@ -56,8 +56,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @uniquedev/haven-shared build
-      - run: pnpm --filter @uniquedev/haven-api test
+      - run: pnpm --filter @haven/shared build
+      - run: pnpm --filter @haven/api test
 
   docker-smoke:
     runs-on: ubuntu-latest
@@ -77,13 +77,13 @@ jobs:
           done
           docker compose logs
           exit 1
-      - run: docker compose run --rm haven-api node dist/migrate.js
-      - run: docker compose run --rm haven-api node dist/seed/demo.js
+      - run: docker compose run --rm api node dist/migrate.js
+      - run: docker compose run --rm api node dist/seed/demo.js
       - name: Assert health endpoint
-        run: curl -fsS localhost:8080/haven/api/health | grep -q '"status":"ok"'
+        run: curl -fsS localhost:8080/api/health | grep -q '"status":"ok"'
       - name: Assert SPA shell
-        run: curl -fsS localhost:8080/haven/ | grep -q 'id="root"'
+        run: curl -fsS localhost:8080/ | grep -q 'id="root"'
       - name: Assert dashboard has data
-        run: curl -fsS localhost:8080/haven/api/dashboard | jq -e '.byCategory | length > 0'
+        run: curl -fsS localhost:8080/api/dashboard | jq -e '.byCategory | length > 0'
       - if: always()
         run: docker compose down -v

@@ -1,0 +1,28 @@
+{
+	auto_https off
+}
+
+# Sub-path variant: use this instead of Caddyfile when Haven shares a domain
+# with other things and must live under a prefix (here, /haven) instead of
+# the root. Build the web image with `--build-arg BASE_PATH=/haven/` so the
+# SPA's asset URLs and API base match this prefix.
+
+:80 {
+	encode gzip
+
+	handle_path /haven/api/* {
+		reverse_proxy api:3000
+	}
+
+	redir /haven /haven/ 308
+
+	handle /haven/* {
+		root * /srv/site
+		try_files {path} /haven/index.html
+		file_server
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+}

@@ -11,8 +11,8 @@
       "!**/dist",
       "!**/node_modules",
       "!**/pnpm-lock.yaml",
-      "!haven/api/drizzle",
-      "!haven/api/drizzle.config.ts.timestamp*"
+      "!packages/api/drizzle",
+      "!packages/api/drizzle.config.ts.timestamp*"
     ]
   },
   "formatter": {

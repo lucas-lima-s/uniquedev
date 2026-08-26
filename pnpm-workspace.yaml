@@ -1,4 +1,4 @@
 packages:
-  - "haven/*"
+  - "packages/*"
 allowBuilds:
   esbuild: true

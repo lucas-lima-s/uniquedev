@@ -2,28 +2,27 @@
 
 ## Repository layout
 
-This is a pnpm monorepo with three top-level directories:
+This is a pnpm monorepo with three workspace packages under `packages/`:
 
 | Path | What |
 |---|---|
-| `portfolio/` | A static hub page served at the domain root, linking out to the other public repositories. |
-| `haven/api` | `@uniquedev/haven-api` — Fastify 5 API: identity verification, provider sync, CRUD routes, webhook ingestion, two scheduled jobs. |
-| `haven/web` | `@uniquedev/haven-web` — Vite + React 19 SPA, served as static files by Caddy at `/haven/`. |
-| `haven/shared` | `@uniquedev/haven-shared` — Zod schemas, money helpers and the projection engine, imported by both `api` and `web`. |
-| `infra/caddy` | Caddyfile and the image that bundles the portfolio hub with each app's web build. |
+| `packages/api` | `@haven/api` — Fastify 5 API: identity verification, provider sync, CRUD routes, webhook ingestion, two scheduled jobs. |
+| `packages/web` | `@haven/web` — Vite + React 19 SPA, served as static files by Caddy at the domain root. |
+| `packages/shared` | `@haven/shared` — Zod schemas, money helpers and the projection engine, imported by both `api` and `web`. |
+| `infra/caddy` | Caddyfile (root path) and Caddyfile.subpath (mounting under a prefix), and the image that bundles the web build. |
 
 ## Money convention
 
 Every monetary value is stored and passed around as an **integer number of
 cents** (`*Cents` fields, `bigint` columns in Postgres). Nothing in the
-codebase parses or stores a float for money — `money.ts` in `haven/shared`
+codebase parses or stores a float for money — `money.ts` in `packages/shared`
 is the only place that converts between a decimal (reais) input and integer
 cents (`reaisToCents`), and it rounds explicitly instead of relying on
 float arithmetic.
 
 ## Provider abstraction
 
-`haven/api/src/providers/` defines a single interface, `BankDataProvider`,
+`packages/api/src/providers/` defines a single interface, `BankDataProvider`,
 with two implementations:
 
 - `pluggy.ts` wraps the Pluggy SDK (`pluggy-sdk`) for real Open Finance
@@ -42,7 +41,7 @@ so the whole application runs with zero third-party accounts when
 
 ## Sync algorithm
 
-`haven/api/src/sync/sync-item.ts` (`syncItem`) is the single sync path, used
+`packages/api/src/sync/sync-item.ts` (`syncItem`) is the single sync path, used
 by manual "sync now" requests, the webhook handler and the reconciliation
 cron alike:
 
@@ -80,13 +79,13 @@ stuck or failed sync is visible without ever leaving the caller hanging.
 
 ## Month projection
 
-`haven/shared/src/projection/` is a pure, framework-free package that turns
+`packages/shared/src/projection/` is a pure, framework-free package that turns
 recurring entries, planned purchases, and realized transactions for a given
 month into a single `buildMonthProjection` result: projected income, realized
 spend, open commitments (recurring bills, yearly provisions taken as a
 monthly twelfth, and approved-purchase installments due that month), what
 remains, and a spend breakdown by category with budget usage. It is unit
-tested in isolation (`packages: haven/shared`) and reused verbatim by both
+tested in isolation (`packages/shared`) and reused verbatim by both
 the API's `/dashboard` route and the web dashboard — there is exactly one
 implementation of "what does this month look like".
 
@@ -116,6 +115,6 @@ design — the app has exactly one owner.
 
 ## Migrations
 
-Migrations (`haven/api/drizzle/*.sql`, managed by `drizzle-kit`) are never
+Migrations (`packages/api/drizzle/*.sql`, managed by `drizzle-kit`) are never
 run automatically at container boot. They are an explicit, manual step
 (`node dist/migrate.js`) run once per deploy — see `deployment.md`.

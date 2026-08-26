@@ -5,16 +5,8 @@
 :80 {
 	encode gzip
 
-	handle_path /haven/api/* {
-		reverse_proxy haven-api:3000
-	}
-
-	redir /haven /haven/ 308
-
-	handle /haven/* {
-		root * /srv/site
-		try_files {path} /haven/index.html
-		file_server
+	handle_path /api/* {
+		reverse_proxy api:3000
 	}
 
 	handle {

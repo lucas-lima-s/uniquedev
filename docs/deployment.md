@@ -9,13 +9,13 @@ header (Cloudflare Access, oauth2-proxy, Pomerium, ...).
 
 ```
 your reverse proxy / tunnel (optional, your choice of tool)
-  -> Caddy            (/ -> portfolio hub | /haven/* -> Haven SPA | /haven/api/* -> Haven API)
-       -> haven-api    (Fastify + Drizzle, holds the data-provider secret, webhook + reconciliation cron)
-            -> haven-db (Postgres, internal network only)
+  -> Caddy       (/ -> Haven SPA | /api/* -> Haven API)
+       -> api    (Fastify + Drizzle, holds the data-provider secret, webhook + reconciliation cron)
+            -> db (Postgres, internal network only)
 ```
 
-`docker-compose.yml` defines `haven-db`, `haven-api` and `caddy`, pinned to
-the compose project name `uniquedev` so volumes do not depend on the
+`docker-compose.yml` defines `db`, `api` and `caddy`, pinned to
+the compose project name `haven` so volumes do not depend on the
 checkout path. Port `8080` is published on the host for local checks; in a
 real deployment nothing else needs to be exposed — whatever sits in front
 (a tunnel, a load balancer, a reverse proxy on the same box) only needs to
@@ -34,14 +34,15 @@ reach `caddy:80` on the compose network.
    non-local deployment), configure `AUTH_JWKS_URL`, `AUTH_ISSUER`,
    `AUTH_AUDIENCE` and `AUTH_IDENTITY_HEADER` to match that proxy's setup,
    and set `AUTH_MODE=proxy`.
-4. `docker compose up -d --build`, wait for `haven-db` and `haven-api` to
+4. `docker compose up -d --build`, wait for `db` and `api` to
    report healthy (`docker compose ps`).
 5. Run the migration once, as a one-off container:
-   `docker compose run --rm haven-api node dist/migrate.js`.
+   `docker compose run --rm api node dist/migrate.js`.
 
 Migrations never run automatically at container boot — this is a deliberate
-choice so that a redeploy or a crash-restart never silently alters the
-schema. Run the migration step explicitly after every deploy that ships one.
+choice so that deploying an update, or a crash-restart, never silently
+alters the schema. Run the migration step explicitly after every deploy
+that ships one.
 
 ## Exposing it to the internet
 
@@ -55,12 +56,13 @@ your tunnel name or token anywhere in this repository.
 
 ## Sub-path routing
 
-`infra/caddy/Caddyfile` already serves the portfolio hub at `/` and the
-Haven app at `/haven/*` (SPA) and `/haven/api/*` (API) from the same Caddy
-instance — see the file itself for the exact `handle_path` /
-`handle` blocks. If you fork this to run Haven as the only thing on a
-domain, drop the `/haven` prefix from both the Caddyfile and
-`VITE_BASE_PATH` (build arg for `infra/caddy/Dockerfile`) and rebuild.
+`infra/caddy/Caddyfile` serves Haven at the domain root: `/` is the SPA and
+`/api/*` reverse-proxies to the `api` service. If Haven needs to share a
+domain with something else, use `infra/caddy/Caddyfile.subpath` instead —
+it mounts the SPA and API under `/haven/*` — and build the web image with
+`--build-arg BASE_PATH=/haven/` (passed through as `VITE_BASE_PATH` in
+`infra/caddy/Dockerfile`) so the SPA's asset URLs and API base match the
+prefix.
 
 ## Environment variable reference
 
@@ -77,10 +79,10 @@ domain, drop the `/haven` prefix from both the Caddyfile and
 | `WEBHOOK_PUBLIC_URL` | required when `DATA_PROVIDER=pluggy` | The URL you register with the data provider. |
 | `RECONCILE_CRON` / `SNAPSHOT_CRON` | no | Cron expressions for the two scheduled jobs. |
 
-## Redeploying
+## Deploying an update
 
 ```bash
 git pull
 docker compose up -d --build
-docker compose run --rm haven-api node dist/migrate.js
+docker compose run --rm api node dist/migrate.js
 ```

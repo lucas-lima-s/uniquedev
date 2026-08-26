@@ -1,20 +1,20 @@
 {
-  "name": "uniquedev",
+  "name": "haven",
   "private": true,
   "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "dev:haven-shared": "pnpm --filter @uniquedev/haven-shared dev",
-    "dev:haven-api": "pnpm --filter @uniquedev/haven-api dev",
-    "dev:haven-web": "pnpm --filter @uniquedev/haven-web dev",
+    "dev:shared": "pnpm --filter @haven/shared dev",
+    "dev:api": "pnpm --filter @haven/api dev",
+    "dev:web": "pnpm --filter @haven/web dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm --filter @uniquedev/haven-shared build && pnpm -r typecheck",
+    "typecheck": "pnpm --filter @haven/shared build && pnpm -r typecheck",
     "test": "pnpm -r test",
     "lint": "biome ci .",
     "format": "biome format --write .",
-    "seed:demo": "pnpm --filter @uniquedev/haven-api run seed:demo"
+    "seed:demo": "pnpm --filter @haven/api run seed:demo"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.4"
