@@ -77,8 +77,8 @@ jobs:
           done
           docker compose logs
           exit 1
-      - run: docker compose run --rm api node dist/migrate.js
-      - run: docker compose run --rm api node dist/seed/demo.js
+      - run: docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm api node dist/migrate.js
+      - run: docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm api node dist/seed/demo.js
       - name: Assert health endpoint
         run: curl -fsS localhost:8080/api/health | grep -q '"status":"ok"'
       - name: Assert SPA shell
@@ -86,4 +86,4 @@ jobs:
       - name: Assert dashboard has data
         run: curl -fsS localhost:8080/api/dashboard | jq -e '.byCategory | length > 0'
       - if: always()
-        run: docker compose down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v

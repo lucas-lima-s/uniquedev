@@ -84,8 +84,8 @@ git clone https://github.com/lucas-lima-s/haven-finance.git
 cd haven-finance
 cp .env.example .env
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-docker compose run --rm api node dist/migrate.js
-docker compose run --rm api node dist/seed/demo.js
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm api node dist/migrate.js
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm api node dist/seed/demo.js
 ```
 
 Open `http://localhost:8080/`. The default `DATA_PROVIDER=mock`
