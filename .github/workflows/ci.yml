@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm --filter @uniquedev/haven-shared build
+      - run: pnpm typecheck
+      - run: pnpm --filter @uniquedev/haven-shared test
+      - run: pnpm --filter @uniquedev/haven-web test
+      - run: pnpm build
+
+  api-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: haven
+          POSTGRES_PASSWORD: haven
+          POSTGRES_DB: haven
+        ports:
+          - 55433:5432
+        options: >-
+          --health-cmd "pg_isready -U haven -d haven"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgres://haven:haven@127.0.0.1:55433/haven_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @uniquedev/haven-shared build
+      - run: pnpm --filter @uniquedev/haven-api test
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+      - name: Wait for services to be healthy
+        run: |
+          for i in $(seq 1 30); do
+            status=$(docker compose ps --format json | jq -s '[.[] | select(.Health != "" and .Health != "healthy")] | length')
+            if [ "$status" = "0" ]; then
+              echo "all services healthy"
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose logs
+          exit 1
+      - run: docker compose run --rm haven-api node dist/migrate.js
+      - run: docker compose run --rm haven-api node dist/seed/demo.js
+      - name: Assert health endpoint
+        run: curl -fsS localhost:8080/haven/api/health | grep -q '"status":"ok"'
+      - name: Assert SPA shell
+        run: curl -fsS localhost:8080/haven/ | grep -q 'id="root"'
+      - name: Assert dashboard has data
+        run: curl -fsS localhost:8080/haven/api/dashboard | jq -e '.byCategory | length > 0'
+      - if: always()
+        run: docker compose down -v
