@@ -1,0 +1,90 @@
+import {
+  useConnections,
+  useHealth,
+  useMe,
+  useSyncConnection,
+  useTriggerSnapshot,
+} from "../api/queries";
+
+const PROVIDER_LABEL: Record<string, string> = {
+  pluggy: "Pluggy (dados reais)",
+  mock: "Demonstração (dados sintéticos)",
+};
+
+export function SettingsPage() {
+  const me = useMe();
+  const health = useHealth();
+  const connections = useConnections();
+  const syncConnection = useSyncConnection();
+  const snapshot = useTriggerSnapshot();
+
+  return (
+    <section>
+      <h1>Configurações</h1>
+
+      <h2>Identidade</h2>
+      {me.isPending && <p>Carregando…</p>}
+      {me.data && (
+        <p className="muted">
+          Conectado como <strong>{me.data.email || me.data.sub}</strong>
+        </p>
+      )}
+
+      <h2>Conexões</h2>
+      {connections.isPending && <p>Carregando…</p>}
+      {connections.data && connections.data.length === 0 && (
+        <p className="muted">Nenhum banco conectado.</p>
+      )}
+      {connections.data && connections.data.length > 0 && (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Instituição</th>
+              <th>Última sincronização</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {connections.data.map((connection) => (
+              <tr key={connection.id}>
+                <td>{connection.institutionName}</td>
+                <td>
+                  {connection.lastSyncedAt
+                    ? new Date(connection.lastSyncedAt).toLocaleString("pt-BR")
+                    : "—"}
+                </td>
+                <td className="num">
+                  <button
+                    type="button"
+                    disabled={syncConnection.isPending}
+                    onClick={() => syncConnection.mutate(connection.id)}
+                  >
+                    Sincronizar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      <h2>Investimentos</h2>
+      <div className="form-row">
+        <button type="button" disabled={snapshot.isPending} onClick={() => snapshot.mutate()}>
+          {snapshot.isPending ? "Registrando…" : "Registrar snapshot de investimentos agora"}
+        </button>
+        {snapshot.isSuccess && (
+          <span className="muted">{snapshot.data.assets} ativo(s) registrados.</span>
+        )}
+      </div>
+
+      <h2>Sobre</h2>
+      <p className="muted">
+        Versão {__APP_VERSION__}
+        {health.data && (
+          <> · Provedor de dados: {PROVIDER_LABEL[health.data.provider] ?? health.data.provider}</>
+        )}
+      </p>
+    </section>
+  );
+}
