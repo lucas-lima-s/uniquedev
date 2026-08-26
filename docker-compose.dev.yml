@@ -1,0 +1,10 @@
+services:
+  haven-db:
+    ports:
+      - "127.0.0.1:55433:5432"
+
+  haven-api:
+    environment:
+      NODE_ENV: development
+      AUTH_MODE: dev
+      DATA_PROVIDER: mock

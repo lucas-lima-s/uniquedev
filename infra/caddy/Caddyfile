@@ -1,0 +1,25 @@
+{
+	auto_https off
+}
+
+:80 {
+	encode gzip
+
+	handle_path /haven/api/* {
+		reverse_proxy haven-api:3000
+	}
+
+	redir /haven /haven/ 308
+
+	handle /haven/* {
+		root * /srv/site
+		try_files {path} /haven/index.html
+		file_server
+	}
+
+	handle {
+		root * /srv/site
+		try_files {path} /index.html
+		file_server
+	}
+}

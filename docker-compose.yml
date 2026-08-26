@@ -1,0 +1,42 @@
+name: uniquedev
+
+services:
+  haven-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - haven_db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  haven-api:
+    build:
+      context: .
+      dockerfile: haven/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      haven-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    build:
+      context: .
+      dockerfile: infra/caddy/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - haven-api
+
+volumes:
+  haven_db_data:
