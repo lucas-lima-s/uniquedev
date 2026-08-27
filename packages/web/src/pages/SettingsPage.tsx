@@ -2,8 +2,10 @@ import {
   useConnections,
   useHealth,
   useMe,
+  useSettings,
   useSyncConnection,
   useTriggerSnapshot,
+  useUpdateSettings,
 } from "../api/queries";
 
 const PROVIDER_LABEL: Record<string, string> = {
@@ -17,6 +19,8 @@ export function SettingsPage() {
   const connections = useConnections();
   const syncConnection = useSyncConnection();
   const snapshot = useTriggerSnapshot();
+  const settings = useSettings();
+  const updateSettings = useUpdateSettings();
 
   return (
     <section>
@@ -67,6 +71,33 @@ export function SettingsPage() {
           </tbody>
         </table>
       )}
+
+      <h2>Reserva de emergência</h2>
+      <form
+        className="form-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const data = new FormData(event.currentTarget);
+          updateSettings.mutate({
+            emergencyFundMonths: Number(data.get("emergencyFundMonths") ?? 6),
+          });
+        }}
+      >
+        <label>
+          Meses de gastos recorrentes
+          <input
+            name="emergencyFundMonths"
+            type="number"
+            min={1}
+            max={36}
+            defaultValue={settings.data?.emergencyFundMonths ?? 6}
+            key={settings.data?.emergencyFundMonths ?? "pending"}
+          />
+        </label>
+        <button type="submit" disabled={updateSettings.isPending}>
+          Salvar
+        </button>
+      </form>
 
       <h2>Investimentos</h2>
       <div className="form-row">

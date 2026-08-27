@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: "/orcamento", label: "Orçamento" },
   { to: "/recorrentes", label: "Recorrentes" },
   { to: "/compras", label: "Compras" },
+  { to: "/metas", label: "Metas" },
   { to: "/investimentos", label: "Investimentos" },
   { to: "/conectar", label: "Conectar" },
   { to: "/configuracoes", label: "Configurações" },

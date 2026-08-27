@@ -10,11 +10,13 @@ import { budgetsRoutes } from "./routes/budgets.js";
 import { categoriesRoutes } from "./routes/categories.js";
 import { connectionsRoutes } from "./routes/connections.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
+import { goalsRoutes } from "./routes/goals.js";
 import { healthRoutes } from "./routes/health.js";
 import { investmentsRoutes } from "./routes/investments.js";
 import { meRoutes } from "./routes/me.js";
 import { purchasesRoutes } from "./routes/purchases.js";
 import { recurringRoutes } from "./routes/recurring.js";
+import { settingsRoutes } from "./routes/settings.js";
 import { transactionsRoutes } from "./routes/transactions.js";
 import { webhooksRoutes } from "./routes/webhooks.js";
 
@@ -39,6 +41,8 @@ export function buildApp(options: FastifyServerOptions = {}) {
     protectedScope.register(purchasesRoutes);
     protectedScope.register(investmentsRoutes);
     protectedScope.register(dashboardRoutes);
+    protectedScope.register(goalsRoutes);
+    protectedScope.register(settingsRoutes);
   });
 
   return app;

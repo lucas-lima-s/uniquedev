@@ -12,6 +12,8 @@ import {
   accounts,
   budgets,
   categories,
+  goalContributions,
+  goals,
   investmentAssets,
   plannedPurchases,
   recurringEntries,
@@ -37,6 +39,8 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
         budgetRows,
         accountRows,
         investmentRows,
+        goalRows,
+        contributionRows,
       ] = await Promise.all([
         db.select().from(recurringEntries),
         db.select().from(plannedPurchases).where(eq(plannedPurchases.status, "approved")),
@@ -51,6 +55,8 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
           .where(eq(budgets.month, month)),
         db.select({ type: accounts.type, balanceCents: accounts.balanceCents }).from(accounts),
         db.select({ currentValueCents: investmentAssets.currentValueCents }).from(investmentAssets),
+        db.select().from(goals),
+        db.select().from(goalContributions),
       ]);
 
       const projection = buildMonthProjection({
@@ -68,6 +74,15 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
         })),
         categories: categoryRows,
         budgets: budgetRows,
+        goals: goalRows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          plannedMonthlyCents: row.plannedMonthlyCents,
+        })),
+        goalContributions: contributionRows.map((row) => ({
+          goalId: row.goalId,
+          date: row.date,
+        })),
       });
 
       return {

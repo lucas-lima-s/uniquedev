@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { AppLayout } from "../AppLayout";
 
 describe("AppLayout", () => {
-  it("renders the brand and all nine navigation links", () => {
+  it("renders the brand and all ten navigation links", () => {
     render(
       <MemoryRouter>
         <AppLayout />
@@ -12,6 +12,6 @@ describe("AppLayout", () => {
     );
 
     expect(screen.getByText("Haven")).toBeInTheDocument();
-    expect(screen.getAllByRole("link")).toHaveLength(9);
+    expect(screen.getAllByRole("link")).toHaveLength(10);
   });
 });

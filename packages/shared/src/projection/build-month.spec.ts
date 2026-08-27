@@ -205,4 +205,32 @@ describe("buildMonthProjection", () => {
     expect(projection.remainingCents).toBe(1000000 - 1200000);
     expect(projection.remainingCents).toBeLessThan(0);
   });
+
+  it("commits a planned monthly goal until a contribution lands in the month", () => {
+    const goalId = "55555555-5555-4555-8555-555555555555";
+    const open = buildMonthProjection({
+      month: "2026-08-01",
+      recurring: [salary],
+      purchases: [],
+      transactions: [],
+      categories: [],
+      budgets: [],
+      goals: [{ id: goalId, name: "Viagem", plannedMonthlyCents: 50000 }],
+    });
+    expect(open.committed).toEqual(
+      expect.arrayContaining([expect.objectContaining({ source: "goal", amountCents: 50000 })]),
+    );
+
+    const paid = buildMonthProjection({
+      month: "2026-08-01",
+      recurring: [salary],
+      purchases: [],
+      transactions: [],
+      categories: [],
+      budgets: [],
+      goals: [{ id: goalId, name: "Viagem", plannedMonthlyCents: 50000 }],
+      goalContributions: [{ goalId, date: "2026-08-12" }],
+    });
+    expect(paid.committed.find((line) => line.source === "goal")).toBeUndefined();
+  });
 });

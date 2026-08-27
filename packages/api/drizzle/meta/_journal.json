@@ -29,6 +29,13 @@
       "when": 1787839533400,
       "tag": "0003_category_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787840572757,
+      "tag": "0004_goals_settings",
+      "breakpoints": true
     }
   ]
 }

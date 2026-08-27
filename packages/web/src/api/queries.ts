@@ -3,10 +3,14 @@ import type {
   BankConnection,
   Budget,
   Category,
+  CreateGoalContributionInput,
+  CreateGoalInput,
   CreateInvestmentAssetInput,
   CreatePlannedPurchaseInput,
   CreateRecurringEntryInput,
   Dashboard,
+  Goal,
+  GoalContribution,
   InvestmentAsset,
   InvestmentHistoryPoint,
   InvestmentsSummary,
@@ -14,6 +18,7 @@ import type {
   PurchaseTransition,
   RecurringEntry,
   RecurringSuggestion,
+  Settings,
   Transaction,
   UpdateInvestmentAssetInput,
   UpdatePlannedPurchaseInput,
@@ -33,6 +38,8 @@ export const queryKeys = {
   recurringSuggestions: ["recurring", "suggestions"] as const,
   purchases: ["purchases"] as const,
   dashboard: (month: string) => ["dashboard", month] as const,
+  goals: ["goals"] as const,
+  settings: ["settings"] as const,
   investments: ["investments"] as const,
   investmentHistory: (months: number) => ["investments", "history", months] as const,
 };
@@ -109,6 +116,73 @@ export function useDeleteInvestment() {
 
 function invalidatePlanning(client: ReturnType<typeof useQueryClient>) {
   void client.invalidateQueries({ queryKey: ["dashboard"] });
+}
+
+export function useSettings() {
+  return useQuery({
+    queryKey: queryKeys.settings,
+    queryFn: () => apiFetch<Settings>("/settings"),
+  });
+}
+
+export function useUpdateSettings() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { emergencyFundMonths?: number }) =>
+      apiFetch<Settings>("/settings", { method: "PATCH", body: JSON.stringify(input) }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.settings });
+      void client.invalidateQueries({ queryKey: queryKeys.goals });
+      invalidatePlanning(client);
+    },
+  });
+}
+
+export function useGoals() {
+  return useQuery({
+    queryKey: queryKeys.goals,
+    queryFn: () => apiFetch<Goal[]>("/goals"),
+  });
+}
+
+export function useCreateGoal() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateGoalInput) =>
+      apiFetch<Goal>("/goals", { method: "POST", body: JSON.stringify(input) }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.goals });
+      invalidatePlanning(client);
+    },
+  });
+}
+
+export function useDeleteGoal() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<null>(`/goals/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.goals });
+      invalidatePlanning(client);
+    },
+  });
+}
+
+export function useCreateGoalContribution() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { goalId: string } & CreateGoalContributionInput) => {
+      const { goalId, ...body } = input;
+      return apiFetch<GoalContribution>(`/goals/${goalId}/contributions`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+    },
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: queryKeys.goals });
+      invalidatePlanning(client);
+    },
+  });
 }
 
 export function useDashboard(month: string) {

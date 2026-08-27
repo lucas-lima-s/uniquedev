@@ -49,6 +49,8 @@ export const assetTypeEnum = pgEnum("asset_type", [
 
 export const assetSourceEnum = pgEnum("asset_source", ["pluggy", "manual"]);
 
+export const goalKindEnum = pgEnum("goal_kind", ["goal", "emergency_fund"]);
+
 export const bankConnections = pgTable("bank_connections", {
   id: uuid("id").defaultRandom().primaryKey(),
   pluggyItemId: text("pluggy_item_id").notNull().unique(),
@@ -186,6 +188,35 @@ export const categoryRules = pgTable("category_rules", {
   priority: integer("priority").notNull().default(0),
   createdAt: timestampTz("created_at").notNull().defaultNow(),
   updatedAt: timestampTz("updated_at").notNull().defaultNow(),
+});
+
+export const settings = pgTable("settings", {
+  id: uuid("id").primaryKey(),
+  emergencyFundMonths: integer("emergency_fund_months").notNull().default(6),
+  updatedAt: timestampTz("updated_at").notNull().defaultNow(),
+});
+
+export const goals = pgTable("goals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  kind: goalKindEnum("kind").notNull(),
+  targetCents: cents("target_cents").notNull().default(0),
+  deadline: date("deadline"),
+  accountId: uuid("account_id").references(() => accounts.id, { onDelete: "set null" }),
+  plannedMonthlyCents: cents("planned_monthly_cents"),
+  createdAt: timestampTz("created_at").notNull().defaultNow(),
+  updatedAt: timestampTz("updated_at").notNull().defaultNow(),
+});
+
+export const goalContributions = pgTable("goal_contributions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  goalId: uuid("goal_id")
+    .notNull()
+    .references(() => goals.id, { onDelete: "cascade" }),
+  amountCents: cents("amount_cents").notNull(),
+  date: date("date").notNull(),
+  transactionId: uuid("transaction_id").references(() => transactions.id, { onDelete: "set null" }),
+  createdAt: timestampTz("created_at").notNull().defaultNow(),
 });
 
 export const webhookEvents = pgTable("webhook_events", {
