@@ -25,6 +25,7 @@ const TABLES = [
   "goals",
   "goal_contributions",
   "notifications",
+  "credit_card_bills",
 ];
 
 beforeEach(async () => {

@@ -1,12 +1,11 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import {
-  addMonths,
   buildMonthProjection,
   dashboardQuerySchema,
   dashboardSchema,
   monthStart,
 } from "@haven/shared";
-import { and, eq, gte, lt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import {
   accounts,
@@ -28,8 +27,6 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
     { schema: { querystring: dashboardQuerySchema, response: { 200: dashboardSchema } } },
     async (request) => {
       const month = request.query.month ?? monthStart(new Date());
-      const from = new Date(`${month}T00:00:00.000Z`);
-      const to = new Date(`${addMonths(month, 1)}T00:00:00.000Z`);
 
       const [
         recurringRows,
@@ -44,10 +41,7 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
       ] = await Promise.all([
         db.select().from(recurringEntries),
         db.select().from(plannedPurchases).where(eq(plannedPurchases.status, "approved")),
-        db
-          .select()
-          .from(transactions)
-          .where(and(gte(transactions.date, from), lt(transactions.date, to))),
+        db.select().from(transactions),
         db.select({ id: categories.id, name: categories.name }).from(categories),
         db
           .select({ categoryId: budgets.categoryId, limitCents: budgets.limitCents })
@@ -67,10 +61,13 @@ export const dashboardRoutes: FastifyPluginAsyncZod = async (app) => {
           id: row.id,
           amountCents: row.amountCents,
           date: row.date.toISOString(),
+          description: row.description,
           customCategoryId: row.customCategoryId,
           pluggyCategory: row.pluggyCategory,
           recurringEntryId: row.recurringEntryId,
           plannedPurchaseId: row.plannedPurchaseId,
+          installmentNumber: row.installmentNumber,
+          installmentTotal: row.installmentTotal,
         })),
         categories: categoryRows,
         budgets: budgetRows,

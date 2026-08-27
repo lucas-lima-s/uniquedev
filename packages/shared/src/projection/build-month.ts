@@ -1,3 +1,4 @@
+import { remainingInstallmentsForMonth } from "../installments.js";
 import type { CategoryBreakdown, CommittedLine, MonthProjection } from "../schemas/dashboard.js";
 import type { PlannedPurchase } from "../schemas/planned-purchase.js";
 import type { RecurringEntry } from "../schemas/recurring-entry.js";
@@ -10,10 +11,13 @@ export interface ProjectionTransaction {
   id: string;
   amountCents: number;
   date: string;
+  description?: string;
   customCategoryId: string | null;
   pluggyCategory: string | null;
   recurringEntryId: string | null;
   plannedPurchaseId: string | null;
+  installmentNumber?: number | null;
+  installmentTotal?: number | null;
 }
 
 export interface ProjectionGoal {
@@ -105,6 +109,26 @@ export function buildMonthProjection(input: ProjectionInput): MonthProjection {
         provision: false,
         installmentLabel: null,
       })),
+    ...remainingInstallmentsForMonth(
+      input.transactions.map((tx) => ({
+        id: tx.id,
+        description: tx.description ?? "Parcela",
+        amountCents: tx.amountCents,
+        date: tx.date,
+        installmentNumber: tx.installmentNumber ?? null,
+        installmentTotal: tx.installmentTotal ?? null,
+      })),
+      month,
+    ).map((line) => ({
+      source: "credit_card" as const,
+      sourceId: line.sourceId,
+      name: line.name,
+      categoryId: null,
+      amountCents: line.amountCents,
+      dueDate: line.dueDate,
+      provision: false,
+      installmentLabel: `${line.installmentNumber}/${line.installmentTotal}`,
+    })),
   ].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   const expenses = inMonth.filter((tx) => tx.amountCents < 0);

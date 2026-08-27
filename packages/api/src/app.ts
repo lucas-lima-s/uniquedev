@@ -7,6 +7,7 @@ import Fastify, { type FastifyServerOptions } from "fastify";
 import { verifyProxyIdentity } from "./plugins/proxy-identity.js";
 import { accountsRoutes } from "./routes/accounts.js";
 import { budgetsRoutes } from "./routes/budgets.js";
+import { calendarRoutes } from "./routes/calendar.js";
 import { categoriesRoutes } from "./routes/categories.js";
 import { connectionsRoutes } from "./routes/connections.js";
 import { dashboardRoutes } from "./routes/dashboard.js";
@@ -37,6 +38,7 @@ export function buildApp(options: FastifyServerOptions = {}) {
     protectedScope.register(transactionsRoutes);
     protectedScope.register(categoriesRoutes);
     protectedScope.register(budgetsRoutes);
+    protectedScope.register(calendarRoutes);
     protectedScope.register(recurringRoutes);
     protectedScope.register(purchasesRoutes);
     protectedScope.register(investmentsRoutes);

@@ -2,6 +2,7 @@ import type {
   Account,
   BankConnection,
   Budget,
+  CalendarEvent,
   Category,
   CreateGoalContributionInput,
   CreateGoalInput,
@@ -40,6 +41,7 @@ export const queryKeys = {
   dashboard: (month: string) => ["dashboard", month] as const,
   goals: ["goals"] as const,
   settings: ["settings"] as const,
+  calendar: (from: string, to: string) => ["calendar", from, to] as const,
   investments: ["investments"] as const,
   investmentHistory: (months: number) => ["investments", "history", months] as const,
 };
@@ -118,6 +120,13 @@ function invalidatePlanning(client: ReturnType<typeof useQueryClient>) {
   void client.invalidateQueries({ queryKey: ["dashboard"] });
 }
 
+export function useCalendar(from: string, to: string) {
+  return useQuery({
+    queryKey: queryKeys.calendar(from, to),
+    queryFn: () => apiFetch<CalendarEvent[]>(`/calendar?from=${from}&to=${to}`),
+  });
+}
+
 export function useSettings() {
   return useQuery({
     queryKey: queryKeys.settings,
@@ -132,8 +141,7 @@ export function useUpdateSettings() {
       emergencyFundMonths?: number;
       largeTransactionThresholdCents?: number;
       alertsEnabled?: boolean;
-    }) =>
-      apiFetch<Settings>("/settings", { method: "PATCH", body: JSON.stringify(input) }),
+    }) => apiFetch<Settings>("/settings", { method: "PATCH", body: JSON.stringify(input) }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.settings });
       void client.invalidateQueries({ queryKey: queryKeys.goals });

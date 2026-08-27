@@ -232,6 +232,17 @@ export const goalContributions = pgTable("goal_contributions", {
   createdAt: timestampTz("created_at").notNull().defaultNow(),
 });
 
+export const creditCardBills = pgTable("credit_card_bills", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  accountId: uuid("account_id")
+    .notNull()
+    .references(() => accounts.id, { onDelete: "cascade" }),
+  pluggyBillId: text("pluggy_bill_id").notNull().unique(),
+  dueDate: date("due_date").notNull(),
+  totalCents: cents("total_cents").notNull(),
+  status: text("status").notNull(),
+});
+
 export const webhookEvents = pgTable("webhook_events", {
   id: uuid("id").defaultRandom().primaryKey(),
   eventType: text("event_type").notNull(),

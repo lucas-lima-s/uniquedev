@@ -4,7 +4,13 @@ import { eq } from "drizzle-orm";
 import { evaluateAlerts } from "../alerts/evaluate.js";
 import { applyLearnedClassification } from "../db/apply-classification.js";
 import { db } from "../db/client.js";
-import { accounts, bankConnections, investmentAssets, transactions } from "../db/schema.js";
+import {
+  accounts,
+  bankConnections,
+  creditCardBills,
+  investmentAssets,
+  transactions,
+} from "../db/schema.js";
 import { snapshotInvestments } from "../jobs/snapshot-investments.js";
 import { provider } from "../providers/index.js";
 import type {
@@ -173,6 +179,29 @@ export async function syncItem(itemId: string): Promise<void> {
             installmentTotal: values.installmentTotal,
           },
         });
+    }
+
+    if (mapAccountType(providerAccount) === "credit_card") {
+      const bills = await provider.fetchBills(providerAccount.id);
+      for (const bill of bills) {
+        await db
+          .insert(creditCardBills)
+          .values({
+            accountId: account.id,
+            pluggyBillId: bill.id,
+            dueDate: bill.dueDate,
+            totalCents: reaisToCents(bill.totalAmount),
+            status: bill.status,
+          })
+          .onConflictDoUpdate({
+            target: creditCardBills.pluggyBillId,
+            set: {
+              dueDate: bill.dueDate,
+              totalCents: reaisToCents(bill.totalAmount),
+              status: bill.status,
+            },
+          });
+      }
     }
   }
 

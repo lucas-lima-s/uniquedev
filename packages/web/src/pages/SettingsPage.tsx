@@ -134,7 +134,9 @@ export function SettingsPage() {
             min="0.01"
             step="0.01"
             defaultValue={
-              settings.data ? (settings.data.largeTransactionThresholdCents / 100).toFixed(2) : "1000"
+              settings.data
+                ? (settings.data.largeTransactionThresholdCents / 100).toFixed(2)
+                : "1000"
             }
             key={settings.data?.largeTransactionThresholdCents ?? "pending"}
           />
