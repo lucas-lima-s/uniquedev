@@ -257,6 +257,21 @@ export function createMockProvider(): BankDataProvider {
         },
       );
     },
+
+    async fetchBills(accountId) {
+      const account = MOCK_ACCOUNTS.find((candidate) => candidate.id === accountId);
+      if (!account || account.subtype !== "CREDIT_CARD") return [];
+      const now = new Date();
+      const due = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 10));
+      return [
+        {
+          id: `mock-bill-${accountId}-current`,
+          dueDate: due.toISOString().slice(0, 10),
+          totalAmount: Math.abs(account.balance),
+          status: "OPEN",
+        },
+      ];
+    },
   };
 }
 

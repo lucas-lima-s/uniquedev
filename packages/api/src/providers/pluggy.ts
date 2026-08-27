@@ -112,5 +112,31 @@ export function createPluggyProvider(): BankDataProvider {
       } while (page <= totalPages);
       return collected.map(toProviderInvestment);
     },
+
+    async fetchBills(accountId) {
+      const client = getClient() as unknown as {
+        fetchBills?: (id: string) => Promise<{
+          results: Array<{
+            id: string;
+            dueDate: string;
+            totalAmount?: number;
+            amount?: number;
+            status?: string;
+          }>;
+        }>;
+      };
+      if (typeof client.fetchBills !== "function") return [];
+      try {
+        const { results } = await client.fetchBills(accountId);
+        return results.map((bill) => ({
+          id: bill.id,
+          dueDate: bill.dueDate.slice(0, 10),
+          totalAmount: bill.totalAmount ?? bill.amount ?? 0,
+          status: bill.status ?? "OPEN",
+        }));
+      } catch {
+        return [];
+      }
+    },
   };
 }

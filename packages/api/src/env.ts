@@ -22,6 +22,11 @@ const envSchema = z
 
     RECONCILE_CRON: z.string().default("0 */4 * * *"),
     SNAPSHOT_CRON: z.string().default("0 6 * * *"),
+
+    ALERT_CHANNEL: z.enum(["none", "webhook", "telegram"]).default("none"),
+    ALERT_WEBHOOK_URL: z.url().optional(),
+    TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+    TELEGRAM_CHAT_ID: z.string().min(1).optional(),
   })
   .superRefine((value, ctx) => {
     if (value.AUTH_MODE === "dev" && value.NODE_ENV === "production") {

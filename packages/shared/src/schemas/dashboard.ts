@@ -17,7 +17,7 @@ export const categoryBreakdownSchema = z.object({
 export type CategoryBreakdown = z.infer<typeof categoryBreakdownSchema>;
 
 export const committedLineSchema = z.object({
-  source: z.enum(["recurring", "purchase"]),
+  source: z.enum(["recurring", "purchase", "goal", "credit_card"]),
   sourceId: z.uuid(),
   name: z.string(),
   categoryId: z.uuid().nullable(),

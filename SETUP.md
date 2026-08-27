@@ -69,7 +69,12 @@ AUTH_MODE=dev
 DATA_PROVIDER=mock
 DATABASE_URL=postgres://haven:change-me@127.0.0.1:55433/haven
 WEBHOOK_SECRET=<any string >= 16 chars>
+ALERT_CHANNEL=none
 ```
+
+Outbound alerts default to `ALERT_CHANNEL=none`. Set `webhook` plus
+`ALERT_WEBHOOK_URL`, or `telegram` plus `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID`, in the local environment only. Keep those secrets out of git.
 
 `AUTH_MODE=dev` injects a fixed `dev@haven.local` identity instead of
 verifying a proxy JWT, and the app refuses to start with `AUTH_MODE=dev` when

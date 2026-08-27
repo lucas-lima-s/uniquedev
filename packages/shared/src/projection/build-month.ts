@@ -1,7 +1,8 @@
+import { remainingInstallmentsForMonth } from "../installments.js";
 import type { CategoryBreakdown, CommittedLine, MonthProjection } from "../schemas/dashboard.js";
 import type { PlannedPurchase } from "../schemas/planned-purchase.js";
 import type { RecurringEntry } from "../schemas/recurring-entry.js";
-import { monthOf } from "./month.js";
+import { dateInMonth, monthOf } from "./month.js";
 import { expandPlannedPurchase } from "./purchase.js";
 import { expandRecurring } from "./recurring.js";
 import { share } from "./share.js";
@@ -10,10 +11,24 @@ export interface ProjectionTransaction {
   id: string;
   amountCents: number;
   date: string;
+  description?: string;
   customCategoryId: string | null;
   pluggyCategory: string | null;
   recurringEntryId: string | null;
   plannedPurchaseId: string | null;
+  installmentNumber?: number | null;
+  installmentTotal?: number | null;
+}
+
+export interface ProjectionGoal {
+  id: string;
+  name: string;
+  plannedMonthlyCents: number | null;
+}
+
+export interface ProjectionGoalContribution {
+  goalId: string;
+  date: string;
 }
 
 export interface ProjectionInput {
@@ -23,6 +38,8 @@ export interface ProjectionInput {
   transactions: ProjectionTransaction[];
   categories: { id: string; name: string }[];
   budgets: { categoryId: string; limitCents: number }[];
+  goals?: ProjectionGoal[];
+  goalContributions?: ProjectionGoalContribution[];
 }
 
 const UNCATEGORIZED = "Sem categoria";
@@ -36,6 +53,11 @@ export function buildMonthProjection(input: ProjectionInput): MonthProjection {
   const inMonth = input.transactions.filter((tx) => monthOf(tx.date) === month);
   const matchedRecurring = new Set(inMonth.map((tx) => tx.recurringEntryId).filter(Boolean));
   const matchedPurchases = new Set(inMonth.map((tx) => tx.plannedPurchaseId).filter(Boolean));
+  const matchedGoals = new Set(
+    (input.goalContributions ?? [])
+      .filter((contribution) => monthOf(contribution.date) === month)
+      .map((contribution) => contribution.goalId),
+  );
 
   const recurringLines = expandRecurring(input.recurring, month);
   const incomeCents = sum(
@@ -70,6 +92,43 @@ export function buildMonthProjection(input: ProjectionInput): MonthProjection {
         installmentLabel:
           line.installmentTotal > 1 ? `${line.installmentNumber}/${line.installmentTotal}` : null,
       })),
+    ...(input.goals ?? [])
+      .filter(
+        (goal) =>
+          goal.plannedMonthlyCents !== null &&
+          goal.plannedMonthlyCents > 0 &&
+          !matchedGoals.has(goal.id),
+      )
+      .map((goal) => ({
+        source: "goal" as const,
+        sourceId: goal.id,
+        name: goal.name,
+        categoryId: null,
+        amountCents: goal.plannedMonthlyCents ?? 0,
+        dueDate: dateInMonth(month, 1),
+        provision: false,
+        installmentLabel: null,
+      })),
+    ...remainingInstallmentsForMonth(
+      input.transactions.map((tx) => ({
+        id: tx.id,
+        description: tx.description ?? "Parcela",
+        amountCents: tx.amountCents,
+        date: tx.date,
+        installmentNumber: tx.installmentNumber ?? null,
+        installmentTotal: tx.installmentTotal ?? null,
+      })),
+      month,
+    ).map((line) => ({
+      source: "credit_card" as const,
+      sourceId: line.sourceId,
+      name: line.name,
+      categoryId: null,
+      amountCents: line.amountCents,
+      dueDate: line.dueDate,
+      provision: false,
+      installmentLabel: `${line.installmentNumber}/${line.installmentTotal}`,
+    })),
   ].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   const expenses = inMonth.filter((tx) => tx.amountCents < 0);

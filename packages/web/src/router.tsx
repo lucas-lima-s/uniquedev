@@ -2,8 +2,10 @@ import { createBrowserRouter } from "react-router";
 import { AppLayout } from "./components/AppLayout";
 import { AccountsPage } from "./pages/AccountsPage";
 import { BudgetsPage } from "./pages/BudgetsPage";
+import { CalendarPage } from "./pages/CalendarPage";
 import { ConnectPage } from "./pages/ConnectPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { GoalsPage } from "./pages/GoalsPage";
 import { InvestmentsPage } from "./pages/InvestmentsPage";
 import { PurchasesPage } from "./pages/PurchasesPage";
 import { RecurringPage } from "./pages/RecurringPage";
@@ -22,6 +24,8 @@ export const router = createBrowserRouter(
         { path: "orcamento", element: <BudgetsPage /> },
         { path: "recorrentes", element: <RecurringPage /> },
         { path: "compras", element: <PurchasesPage /> },
+        { path: "metas", element: <GoalsPage /> },
+        { path: "calendario", element: <CalendarPage /> },
         { path: "investimentos", element: <InvestmentsPage /> },
         { path: "conectar", element: <ConnectPage /> },
         { path: "configuracoes", element: <SettingsPage /> },

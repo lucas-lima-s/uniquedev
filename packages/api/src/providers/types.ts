@@ -41,6 +41,13 @@ export interface FetchTransactionsOptions {
   dateFrom?: string;
 }
 
+export interface ProviderBill {
+  id: string;
+  dueDate: string;
+  totalAmount: number;
+  status: string;
+}
+
 export interface BankDataProvider {
   createConnectToken(webhookUrl?: string): Promise<{ accessToken: string }>;
   fetchItem(itemId: string): Promise<ProviderItem>;
@@ -50,4 +57,5 @@ export interface BankDataProvider {
     options?: FetchTransactionsOptions,
   ): Promise<ProviderTransaction[]>;
   fetchInvestments(itemId: string): Promise<ProviderInvestment[]>;
+  fetchBills(accountId: string): Promise<ProviderBill[]>;
 }
