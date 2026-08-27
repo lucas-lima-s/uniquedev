@@ -36,6 +36,13 @@
       "when": 1787840572757,
       "tag": "0004_goals_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787841099340,
+      "tag": "0005_notifications",
+      "breakpoints": true
     }
   ]
 }

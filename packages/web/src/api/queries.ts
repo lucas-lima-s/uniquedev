@@ -128,7 +128,11 @@ export function useSettings() {
 export function useUpdateSettings() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (input: { emergencyFundMonths?: number }) =>
+    mutationFn: (input: {
+      emergencyFundMonths?: number;
+      largeTransactionThresholdCents?: number;
+      alertsEnabled?: boolean;
+    }) =>
       apiFetch<Settings>("/settings", { method: "PATCH", body: JSON.stringify(input) }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.settings });

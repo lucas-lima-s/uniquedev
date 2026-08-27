@@ -193,7 +193,20 @@ export const categoryRules = pgTable("category_rules", {
 export const settings = pgTable("settings", {
   id: uuid("id").primaryKey(),
   emergencyFundMonths: integer("emergency_fund_months").notNull().default(6),
+  largeTransactionThresholdCents: cents("large_transaction_threshold_cents")
+    .notNull()
+    .default(100000),
+  alertsEnabled: boolean("alerts_enabled").notNull().default(false),
   updatedAt: timestampTz("updated_at").notNull().defaultNow(),
+});
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  type: text("type").notNull(),
+  dedupKey: text("dedup_key").notNull().unique(),
+  payload: jsonb("payload").notNull(),
+  channel: text("channel").notNull(),
+  sentAt: timestampTz("sent_at").notNull().defaultNow(),
 });
 
 export const goals = pgTable("goals", {

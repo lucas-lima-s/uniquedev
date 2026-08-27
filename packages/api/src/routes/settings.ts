@@ -14,10 +14,18 @@ export async function getOrCreateSettings() {
   return created!;
 }
 
+function serializeSettings(row: typeof settings.$inferSelect) {
+  return {
+    emergencyFundMonths: row.emergencyFundMonths,
+    largeTransactionThresholdCents: row.largeTransactionThresholdCents,
+    alertsEnabled: row.alertsEnabled,
+  };
+}
+
 export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get("/settings", { schema: { response: { 200: settingsSchema } } }, async () => {
     const row = await getOrCreateSettings();
-    return { emergencyFundMonths: row.emergencyFundMonths };
+    return serializeSettings(row);
   });
 
   app.patch(
@@ -30,7 +38,7 @@ export const settingsRoutes: FastifyPluginAsyncZod = async (app) => {
         .set({ ...request.body, updatedAt: new Date() })
         .where(eq(settings.id, SETTINGS_ROW_ID))
         .returning();
-      return { emergencyFundMonths: row!.emergencyFundMonths };
+      return serializeSettings(row!);
     },
   );
 };

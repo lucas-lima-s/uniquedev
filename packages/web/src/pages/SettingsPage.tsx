@@ -1,3 +1,4 @@
+import { reaisToCents } from "@haven/shared";
 import {
   useConnections,
   useHealth,
@@ -96,6 +97,50 @@ export function SettingsPage() {
         </label>
         <button type="submit" disabled={updateSettings.isPending}>
           Salvar
+        </button>
+      </form>
+
+      <h2>Alertas</h2>
+      <p className="muted">
+        O destino (webhook ou Telegram) é configurado só no servidor, via variáveis de ambiente.
+      </p>
+      <form
+        className="form-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const data = new FormData(event.currentTarget);
+          updateSettings.mutate({
+            alertsEnabled: data.get("alertsEnabled") === "on",
+            largeTransactionThresholdCents: reaisToCents(
+              Number(data.get("largeThreshold") ?? 1000),
+            ),
+          });
+        }}
+      >
+        <label>
+          <input
+            name="alertsEnabled"
+            type="checkbox"
+            defaultChecked={settings.data?.alertsEnabled ?? false}
+            key={`alerts-${settings.data?.alertsEnabled ?? "pending"}`}
+          />
+          Enviar alertas
+        </label>
+        <label>
+          Transação grande a partir de (R$)
+          <input
+            name="largeThreshold"
+            type="number"
+            min="0.01"
+            step="0.01"
+            defaultValue={
+              settings.data ? (settings.data.largeTransactionThresholdCents / 100).toFixed(2) : "1000"
+            }
+            key={settings.data?.largeTransactionThresholdCents ?? "pending"}
+          />
+        </label>
+        <button type="submit" disabled={updateSettings.isPending}>
+          Salvar alertas
         </button>
       </form>
 

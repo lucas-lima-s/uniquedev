@@ -4,6 +4,8 @@ export const SETTINGS_ROW_ID = "00000000-0000-4000-8000-000000000001";
 
 export const settingsSchema = z.object({
   emergencyFundMonths: z.number().int().min(1).max(36),
+  largeTransactionThresholdCents: z.number().int().positive(),
+  alertsEnabled: z.boolean(),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
