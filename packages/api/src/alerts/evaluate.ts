@@ -90,7 +90,10 @@ export async function evaluateAlerts(
   ] = await Promise.all([
     db.select().from(recurringEntries),
     db.select().from(plannedPurchases).where(eq(plannedPurchases.status, "approved")),
-    db.select().from(transactions).where(and(gte(transactions.date, from), lt(transactions.date, to))),
+    db
+      .select()
+      .from(transactions)
+      .where(and(gte(transactions.date, from), lt(transactions.date, to))),
     db.select({ id: categories.id, name: categories.name }).from(categories),
     db
       .select({ categoryId: budgets.categoryId, limitCents: budgets.limitCents })
