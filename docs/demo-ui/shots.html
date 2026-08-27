@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Haven demo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        --bg: #0f1115;
+        --surface: #171a21;
+        --border: #27272a;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); }
+      .app-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-areas: "brand main" "nav main";
+        grid-template-columns: 220px 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      .app-brand {
+        grid-area: brand;
+        padding: 1rem 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        border-right: 1px solid var(--border);
+      }
+      .app-nav {
+        grid-area: nav;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.75rem;
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .app-nav a {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .app-nav a.active { color: var(--text); background: var(--bg); }
+      .app-main { grid-area: main; padding: 2rem; }
+      .muted { color: var(--muted); }
+      .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+      .card {
+        display: flex; flex-direction: column; gap: 0.25rem;
+        padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+      }
+      .card-label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+      .card-value { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .card-sub { color: var(--muted); font-size: 0.85rem; }
+      .amount-negative { color: #f87171; }
+      .amount-positive { color: #4ade80; }
+      .table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+      .table th, .table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; }
+      .table th { color: var(--muted); }
+      .table .num { text-align: right; font-variant-numeric: tabular-nums; }
+      .badge {
+        display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.45rem; border-radius: 999px;
+        background: var(--bg); border: 1px solid var(--border); color: var(--muted); font-size: 0.75rem;
+      }
+      .form-row { display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1rem; }
+      .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0; }
+      .bar { height: 18px; border-radius: 999px; overflow: hidden; display: flex; background: #27272a; margin-top: 0.75rem; }
+      .bar span { display: block; height: 100%; }
+      .pie {
+        width: 180px; height: 180px; border-radius: 50%; margin: 0.75rem auto;
+        background: conic-gradient(#60a5fa 0 38%, #f472b6 38% 58%, #34d399 58% 78%, #fbbf24 78% 90%, #a78bfa 90% 100%);
+      }
+      .page { display: none; }
+      .page.active { display: block; }
+      .caption { margin: 0 0 1rem; color: var(--muted); font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-brand">Haven</header>
+      <nav class="app-nav">
+        <a href="#dashboard" id="nav-dashboard">Painel</a>
+        <a href="#investments" id="nav-investments">Investimentos</a>
+        <a href="#purchases" id="nav-compras">Compras</a>
+        <a>Contas</a>
+        <a>Extrato</a>
+        <a>Orçamento</a>
+      </nav>
+      <main class="app-main">
+        <p class="caption">Synthetic demo dataset (Banco Aurora / Banco Meridian) — no real financial data.</p>
+
+        <section id="page-dashboard" class="page active">
+          <div class="form-row">
+            <h1 style="margin:0">Painel</h1>
+            <strong>agosto de 2026</strong>
+          </div>
+          <div class="cards">
+            <div class="card"><span class="card-label">Renda prevista</span><span class="card-value">R$&nbsp;12.400,00</span><span class="card-sub">recebido: R$&nbsp;12.400,00</span></div>
+            <div class="card"><span class="card-label">Gasto no mês</span><span class="card-value amount-negative">R$&nbsp;4.180,00</span><span class="card-sub">33% da renda</span></div>
+            <div class="card"><span class="card-label">Comprometido</span><span class="card-value">R$&nbsp;3.250,00</span><span class="card-sub">26% da renda, ainda não pago</span></div>
+            <div class="card"><span class="card-label">Sobra</span><span class="card-value amount-positive">R$&nbsp;4.970,00</span><span class="card-sub">40% da renda</span></div>
+            <div class="card"><span class="card-label">Saldo em contas</span><span class="card-value">R$&nbsp;18.640,00</span><span class="card-sub">cartões: R$&nbsp;1.120,00</span></div>
+          </div>
+          <div class="chart-grid">
+            <div class="card">
+              <span class="card-label">Gasto x comprometido x sobra</span>
+              <div class="bar"><span style="width:33%;background:#f87171"></span><span style="width:26%;background:#fbbf24"></span><span style="width:41%;background:#4ade80"></span></div>
+            </div>
+            <div class="card">
+              <span class="card-label">Gastos por categoria</span>
+              <div class="pie"></div>
+            </div>
+          </div>
+          <table class="table">
+            <thead><tr><th>Categoria</th><th class="num">Gasto</th><th class="num">% do gasto</th><th class="num">Orçamento</th></tr></thead>
+            <tbody>
+              <tr><td>Alimentação</td><td class="num">R$&nbsp;1.580,00</td><td class="num">38%</td><td class="num">R$&nbsp;1.800,00 (88%)</td></tr>
+              <tr><td>Moradia</td><td class="num">R$&nbsp;1.200,00</td><td class="num">29%</td><td class="num">R$&nbsp;1.200,00 (100%)</td></tr>
+              <tr><td>Transporte</td><td class="num">R$&nbsp;640,00</td><td class="num">15%</td><td class="num">—</td></tr>
+              <tr><td>Lazer</td><td class="num">R$&nbsp;760,00</td><td class="num">18%</td><td class="num">R$&nbsp;800,00 (95%)</td></tr>
+            </tbody>
+          </table>
+          <h2>Compromissos do mês</h2>
+          <table class="table">
+            <thead><tr><th>Vencimento</th><th>Compromisso</th><th class="num">Valor</th></tr></thead>
+            <tbody>
+              <tr><td>05/08/2026</td><td>Aluguel<span class="badge">recorrente</span></td><td class="num">R$&nbsp;1.800,00</td></tr>
+              <tr><td>12/08/2026</td><td>Notebook<span class="badge">2/10</span></td><td class="num">R$&nbsp;450,00</td></tr>
+              <tr><td>20/08/2026</td><td>Seguro anual<span class="badge">fatia anual</span></td><td class="num">R$&nbsp;1.000,00</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="page-investments" class="page">
+          <h1>Investimentos</h1>
+          <div class="cards">
+            <div class="card"><span class="card-label">Patrimônio investido</span><span class="card-value">R$&nbsp;84.320,00</span><span class="card-sub">custo: R$&nbsp;76.000,00</span></div>
+            <div class="card"><span class="card-label">Rendimento</span><span class="card-value amount-positive">R$&nbsp;8.320,00</span><span class="card-sub">10.95% sobre o custo</span></div>
+            <div class="card"><span class="card-label">Renda fixa</span><span class="card-value">R$&nbsp;42.100,00</span><span class="card-sub">50% da carteira</span></div>
+            <div class="card"><span class="card-label">Ações</span><span class="card-value">R$&nbsp;28.400,00</span><span class="card-sub">34% da carteira</span></div>
+            <div class="card"><span class="card-label">Fundos</span><span class="card-value">R$&nbsp;13.820,00</span><span class="card-sub">16% da carteira</span></div>
+          </div>
+          <table class="table">
+            <thead><tr><th>Ativo</th><th>Tipo</th><th>Origem</th><th class="num">Investido</th><th class="num">Valor atual</th><th class="num">Rendimento</th></tr></thead>
+            <tbody>
+              <tr><td>Tesouro Aurora 2035</td><td>Renda fixa</td><td>Manual</td><td class="num">R$&nbsp;20.000,00</td><td class="num">R$&nbsp;22.140,00</td><td class="num amount-positive">R$&nbsp;2.140,00 (10.7%)</td></tr>
+              <tr><td>CDB Meridian</td><td>Renda fixa</td><td>Open Finance</td><td class="num">R$&nbsp;18.000,00</td><td class="num">R$&nbsp;19.960,00</td><td class="num amount-positive">R$&nbsp;1.960,00 (10.9%)</td></tr>
+              <tr><td>Aurora ON</td><td>Ações</td><td>Open Finance</td><td class="num">R$&nbsp;25.000,00</td><td class="num">R$&nbsp;28.400,00</td><td class="num amount-positive">R$&nbsp;3.400,00 (13.6%)</td></tr>
+              <tr><td>Fundo Horizonte</td><td>Fundos</td><td>Manual</td><td class="num">R$&nbsp;13.000,00</td><td class="num">R$&nbsp;13.820,00</td><td class="num amount-positive">R$&nbsp;820,00 (6.3%)</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="page-purchases" class="page">
+          <h1>Compras planejadas</h1>
+          <p class="muted">Uma compra aprovada entra na projeção do mês (ou dos meses, se parcelada) antes de acontecer.</p>
+          <h2>Aprovada</h2>
+          <table class="table">
+            <thead><tr><th>Compra</th><th>Quando</th><th>Pagamento</th><th>Categoria</th><th class="num">Total</th></tr></thead>
+            <tbody>
+              <tr><td>Notebook</td><td>12/08/2026</td><td>10x de R$&nbsp;450,00</td><td>Lazer</td><td class="num">R$&nbsp;4.500,00</td></tr>
+            </tbody>
+          </table>
+          <h2>Em análise</h2>
+          <table class="table">
+            <thead><tr><th>Compra</th><th>Quando</th><th>Pagamento</th><th>Categoria</th><th class="num">Total</th></tr></thead>
+            <tbody>
+              <tr><td>Bicicleta urbana</td><td>01/09/2026</td><td>À vista</td><td>Transporte</td><td class="num">R$&nbsp;2.800,00</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+    <script>
+      const pages = {
+        dashboard: "page-dashboard",
+        investments: "page-investments",
+        purchases: "page-purchases"
+      };
+      function show(name) {
+        document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll(".app-nav a").forEach((el) => el.classList.remove("active"));
+        document.getElementById(pages[name] || pages.dashboard).classList.add("active");
+        const nav = document.getElementById("nav-" + (name === "purchases" ? "compras" : name));
+        if (nav) nav.classList.add("active");
+      }
+      const q = new URLSearchParams(location.search).get("page") || "dashboard";
+      show(q);
+    </script>
+  </body>
+</html>

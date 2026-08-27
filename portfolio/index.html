@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lucas de Lima — public work</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1115;
+        --surface: #171a21;
+        --border: #27272a;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 4rem;
+      }
+      h1 {
+        margin: 0 0 0.4rem;
+        font-size: 1.8rem;
+      }
+      .lede {
+        color: var(--muted);
+        max-width: 46rem;
+        line-height: 1.5;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      a.card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        padding: 1rem 1.1rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.75rem;
+        color: inherit;
+        text-decoration: none;
+      }
+      a.card:hover {
+        border-color: var(--accent);
+      }
+      .name {
+        font-weight: 700;
+      }
+      .blurb {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.4;
+        flex: 1;
+      }
+      .stack {
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Public repositories</h1>
+      <p class="lede">
+        Selected public work by
+        <a href="https://github.com/lucas-lima-s" style="color: var(--accent)">lucas-lima-s</a>.
+        This page is a static hub of GitHub links — there is no live product deployment here.
+      </p>
+      <div class="grid">
+        <a class="card" href="https://github.com/lucas-lima-s/uniquedev">
+          <span class="name">uniquedev</span>
+          <span class="blurb">Self-hosted personal finance app (Haven) for Open Finance Brasil: bank sync, month projection, budgets and investments.</span>
+          <span class="stack">TypeScript · Fastify · React</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/pr-audit">
+          <span class="name">pr-audit</span>
+          <span class="blurb">Static analysis and LLM-assisted review pipeline for GitHub pull requests.</span>
+          <span class="stack">Python</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/sava-helper">
+          <span class="name">sava-helper</span>
+          <span class="blurb">Chrome MV3 extension that extracts choice-based forms and drives real React click handlers via a keyless proxy.</span>
+          <span class="stack">JavaScript · Chrome extension</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/windows-setup-toolkit">
+          <span class="name">windows-setup-toolkit</span>
+          <span class="blurb">Reproducible Windows 11 setup: winget, debloat, drivers and unattend, with a denylist for private artifacts.</span>
+          <span class="stack">PowerShell</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/ahk-desktop-utils">
+          <span class="name">ahk-desktop-utils</span>
+          <span class="blurb">AutoHotkey v2 pack: text case conversion, hide windows to the tray, clipboard-to-file, window helpers.</span>
+          <span class="stack">AutoHotkey v2</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/jira-metrics-dashboard">
+          <span class="name">jira-metrics-dashboard</span>
+          <span class="blurb">Jira → PostgreSQL → Grafana pipeline for sprint and release delivery metrics.</span>
+          <span class="stack">Python · Grafana</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/git-guard">
+          <span class="name">git-guard</span>
+          <span class="blurb">Local git policy helper for identity, secrets and push hygiene.</span>
+          <span class="stack">Python</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/claude-skill-repo-audit">
+          <span class="name">claude-skill-repo-audit</span>
+          <span class="blurb">Publish-readiness gate: secret/PII scans, git-history identity leaks, dead links, portfolio dashboard.</span>
+          <span class="stack">Python</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/ez-spell-tracker">
+          <span class="name">ez-spell-tracker</span>
+          <span class="blurb">Injection-free League of Legends overlay for enemy summoner-spell cooldowns.</span>
+          <span class="stack">Python</span>
+        </a>
+        <a class="card" href="https://github.com/lucas-lima-s/wow-ez-fishing">
+          <span class="name">wow-ez-fishing</span>
+          <span class="blurb">Sound-driven auto-fishing for World of Warcraft using WASAPI loopback and FFT splash detection.</span>
+          <span class="stack">Python</span>
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

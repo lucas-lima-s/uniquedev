@@ -1,6 +1,6 @@
 # Haven
 
-[![CI](https://github.com/lucas-lima-s/haven-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/lucas-lima-s/haven-finance/actions/workflows/ci.yml)
+[![CI](https://github.com/lucas-lima-s/uniquedev/actions/workflows/ci.yml/badge.svg)](https://github.com/lucas-lima-s/uniquedev/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A self-hosted personal finance app for Open Finance Brasil: bank sync
@@ -80,8 +80,8 @@ the webhook lifecycle, and the projection engine in detail.
 ## Quick start (demo mode, no accounts needed)
 
 ```bash
-git clone https://github.com/lucas-lima-s/haven-finance.git
-cd haven-finance
+git clone https://github.com/lucas-lima-s/uniquedev.git
+cd uniquedev
 cp .env.example .env
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm api node dist/migrate.js
