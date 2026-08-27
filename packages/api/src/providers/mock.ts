@@ -213,7 +213,7 @@ const MOCK_INVESTMENTS: MockInvestmentDef[] = [
 export function createMockProvider(): BankDataProvider {
   return {
     async createConnectToken() {
-      return { accessToken: "mock-connect-token" };
+      return { accessToken: "mock-connect-token" }; // repo-audit: allow-secret
     },
 
     async fetchItem(itemId: string): Promise<ProviderItem> {

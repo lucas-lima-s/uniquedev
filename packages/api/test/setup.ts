@@ -3,7 +3,7 @@ import { afterAll, beforeEach } from "vitest";
 process.env.NODE_ENV = "test";
 process.env.AUTH_MODE = "dev";
 process.env.DATA_PROVIDER = "mock";
-process.env.WEBHOOK_SECRET = "test-secret-0123456789";
+process.env.WEBHOOK_SECRET = "test-secret-0123456789"; // repo-audit: allow-secret
 process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? "postgres://haven:haven@127.0.0.1:55433/haven_test";
 
