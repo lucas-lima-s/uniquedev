@@ -177,6 +177,17 @@ export const investmentSnapshots = pgTable(
   ],
 );
 
+export const categoryRules = pgTable("category_rules", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  pattern: text("pattern").notNull().unique(),
+  categoryId: uuid("category_id")
+    .notNull()
+    .references(() => categories.id, { onDelete: "cascade" }),
+  priority: integer("priority").notNull().default(0),
+  createdAt: timestampTz("created_at").notNull().defaultNow(),
+  updatedAt: timestampTz("updated_at").notNull().defaultNow(),
+});
+
 export const webhookEvents = pgTable("webhook_events", {
   id: uuid("id").defaultRandom().primaryKey(),
   eventType: text("event_type").notNull(),

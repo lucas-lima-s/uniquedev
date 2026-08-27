@@ -13,6 +13,7 @@ import type {
   PlannedPurchase,
   PurchaseTransition,
   RecurringEntry,
+  RecurringSuggestion,
   Transaction,
   UpdateInvestmentAssetInput,
   UpdatePlannedPurchaseInput,
@@ -29,6 +30,7 @@ export const queryKeys = {
   categories: ["categories"] as const,
   budgets: (month: string) => ["budgets", month] as const,
   recurring: ["recurring"] as const,
+  recurringSuggestions: ["recurring", "suggestions"] as const,
   purchases: ["purchases"] as const,
   dashboard: (month: string) => ["dashboard", month] as const,
   investments: ["investments"] as const,
@@ -116,6 +118,13 @@ export function useDashboard(month: string) {
   });
 }
 
+export function useRecurringSuggestions() {
+  return useQuery({
+    queryKey: queryKeys.recurringSuggestions,
+    queryFn: () => apiFetch<RecurringSuggestion[]>("/recurring/suggestions"),
+  });
+}
+
 export function useRecurring() {
   return useQuery({
     queryKey: queryKeys.recurring,
@@ -130,6 +139,7 @@ export function useCreateRecurring() {
       apiFetch<RecurringEntry>("/recurring", { method: "POST", body: JSON.stringify(input) }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.recurring });
+      void client.invalidateQueries({ queryKey: queryKeys.recurringSuggestions });
       invalidatePlanning(client);
     },
   });
@@ -147,6 +157,7 @@ export function useUpdateRecurring() {
     },
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.recurring });
+      void client.invalidateQueries({ queryKey: queryKeys.recurringSuggestions });
       invalidatePlanning(client);
     },
   });
@@ -158,6 +169,7 @@ export function useDeleteRecurring() {
     mutationFn: (id: string) => apiFetch<null>(`/recurring/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.recurring });
+      void client.invalidateQueries({ queryKey: queryKeys.recurringSuggestions });
       invalidatePlanning(client);
     },
   });
@@ -288,7 +300,10 @@ export function useUpdateTransactionCategory() {
         method: "PATCH",
         body: JSON.stringify({ customCategoryId: input.customCategoryId }),
       }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["transactions"] }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ["transactions"] });
+      void client.invalidateQueries({ queryKey: queryKeys.recurringSuggestions });
+    },
   });
 }
 

@@ -1,3 +1,4 @@
+export * from "./matching.js";
 export * from "./money.js";
 export * from "./projection/build-month.js";
 export * from "./projection/investments.js";
@@ -5,6 +6,7 @@ export * from "./projection/month.js";
 export * from "./projection/purchase.js";
 export * from "./projection/recurring.js";
 export * from "./projection/share.js";
+export * from "./recurring-detect.js";
 export * from "./schemas/account.js";
 export * from "./schemas/bank-connection.js";
 export * from "./schemas/budget.js";

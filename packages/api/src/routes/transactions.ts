@@ -7,6 +7,7 @@ import {
 } from "@haven/shared";
 import { and, desc, eq, gte, lte, type SQL } from "drizzle-orm";
 import { z } from "zod";
+import { applyLearnedClassification, learnCategoryRule } from "../db/apply-classification.js";
 import { db } from "../db/client.js";
 import { transactions } from "../db/schema.js";
 
@@ -73,6 +74,12 @@ export const transactionsRoutes: FastifyPluginAsyncZod = async (app) => {
         .returning();
       if (!row) {
         return reply.code(404).send({ error: "transaction_not_found" });
+      }
+      if (request.body.customCategoryId) {
+        await learnCategoryRule(row.description, request.body.customCategoryId);
+        await applyLearnedClassification();
+        const [refreshed] = await db.select().from(transactions).where(eq(transactions.id, row.id));
+        return serializeTransaction(refreshed ?? row);
       }
       return serializeTransaction(row);
     },

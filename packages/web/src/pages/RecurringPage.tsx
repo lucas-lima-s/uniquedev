@@ -14,6 +14,7 @@ import {
   useCreateRecurring,
   useDeleteRecurring,
   useRecurring,
+  useRecurringSuggestions,
 } from "../api/queries";
 
 const MONTHS = [
@@ -45,6 +46,7 @@ export function RecurringPage() {
   const [cadence, setCadence] = useState<RecurringCadence>("monthly");
   const [kind, setKind] = useState<RecurringKind>("expense");
   const recurring = useRecurring();
+  const suggestions = useRecurringSuggestions();
   const categories = useCategories();
   const createRecurring = useCreateRecurring();
   const deleteRecurring = useDeleteRecurring();
@@ -205,6 +207,55 @@ export function RecurringPage() {
         </button>
       </form>
       {createRecurring.isError && <p className="amount-negative">Não foi possível salvar.</p>}
+
+      {(suggestions.data ?? []).length > 0 && (
+        <section>
+          <h2>Sugestões a partir do extrato</h2>
+          <p className="muted">
+            Detectadas no histórico e ainda não cadastradas. Nada é criado até você confirmar.
+          </p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Quando</th>
+                <th className="num">Valor</th>
+                <th className="num">Vezes</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {(suggestions.data ?? []).map((suggestion) => (
+                <tr key={suggestion.matchPattern}>
+                  <td>{suggestion.name}</td>
+                  <td>todo dia {suggestion.dueDay}</td>
+                  <td className="num">{centsToBRL(suggestion.amountCents)}</td>
+                  <td className="num">{suggestion.occurrenceCount}</td>
+                  <td className="num">
+                    <button
+                      type="button"
+                      disabled={createRecurring.isPending}
+                      onClick={() =>
+                        createRecurring.mutate({
+                          kind: "expense",
+                          name: suggestion.name,
+                          amountCents: suggestion.amountCents,
+                          cadence: suggestion.cadence,
+                          dueDay: suggestion.dueDay,
+                          activeFrom: today(),
+                          matchPattern: suggestion.matchPattern,
+                        })
+                      }
+                    >
+                      Cadastrar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <h2>Renda</h2>
       {renderTable(incomes)}

@@ -20,6 +20,7 @@ const TABLES = [
   "investment_assets",
   "investment_snapshots",
   "webhook_events",
+  "category_rules",
 ];
 
 beforeEach(async () => {

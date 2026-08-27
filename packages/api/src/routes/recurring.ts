@@ -1,13 +1,16 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import {
   createRecurringEntrySchema,
+  detectRecurringSuggestions,
   recurringEntrySchema,
+  recurringSuggestionSchema,
   updateRecurringEntrySchema,
 } from "@haven/shared";
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { applyLearnedClassification } from "../db/apply-classification.js";
 import { db } from "../db/client.js";
-import { recurringEntries } from "../db/schema.js";
+import { recurringEntries, transactions } from "../db/schema.js";
 
 type RecurringRow = typeof recurringEntries.$inferSelect;
 
@@ -47,11 +50,32 @@ export const recurringRoutes: FastifyPluginAsyncZod = async (app) => {
     },
   );
 
+  app.get(
+    "/recurring/suggestions",
+    { schema: { response: { 200: z.array(recurringSuggestionSchema) } } },
+    async () => {
+      const [rows, entries] = await Promise.all([
+        db.select().from(transactions),
+        db.select().from(recurringEntries),
+      ]);
+      return detectRecurringSuggestions(
+        rows.map((row) => ({
+          description: row.description,
+          amountCents: row.amountCents,
+          date: row.date.toISOString(),
+          recurringEntryId: row.recurringEntryId,
+        })),
+        entries.flatMap((entry) => (entry.matchPattern ? [entry.matchPattern] : [])),
+      );
+    },
+  );
+
   app.post(
     "/recurring",
     { schema: { body: createRecurringEntrySchema, response: { 201: recurringEntrySchema } } },
     async (request, reply) => {
       const [row] = await db.insert(recurringEntries).values(request.body).returning();
+      await applyLearnedClassification();
       return reply.code(201).send(serializeRecurring(row!));
     },
   );

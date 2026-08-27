@@ -1,6 +1,7 @@
 import type { AccountType, AssetType } from "@haven/shared";
 import { reaisToCents } from "@haven/shared";
 import { eq } from "drizzle-orm";
+import { applyLearnedClassification } from "../db/apply-classification.js";
 import { db } from "../db/client.js";
 import { accounts, bankConnections, investmentAssets, transactions } from "../db/schema.js";
 import { snapshotInvestments } from "../jobs/snapshot-investments.js";
@@ -175,6 +176,7 @@ export async function syncItem(itemId: string): Promise<void> {
   }
 
   await syncInvestments(connection.id, item.id);
+  await applyLearnedClassification();
 
   await db
     .update(bankConnections)

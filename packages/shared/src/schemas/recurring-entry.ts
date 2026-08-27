@@ -57,3 +57,14 @@ export const updateRecurringEntrySchema = z
   .superRefine(requiresDueMonthForYearly);
 
 export type UpdateRecurringEntryInput = z.input<typeof updateRecurringEntrySchema>;
+
+export const recurringSuggestionSchema = z.object({
+  name: z.string(),
+  amountCents: z.number().int().positive(),
+  cadence: z.literal("monthly"),
+  dueDay: z.number().int().min(1).max(31),
+  matchPattern: z.string(),
+  occurrenceCount: z.number().int().positive(),
+});
+
+export type RecurringSuggestion = z.infer<typeof recurringSuggestionSchema>;
