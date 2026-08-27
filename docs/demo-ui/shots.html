@@ -39,7 +39,8 @@
         border-right: 1px solid var(--border);
         background: var(--surface);
       }
-      .app-nav a {
+      .app-nav a,
+      .app-nav span {
         padding: 0.5rem 0.75rem;
         border-radius: 0.5rem;
         color: var(--muted);
@@ -87,9 +88,9 @@
         <a href="#dashboard" id="nav-dashboard">Painel</a>
         <a href="#investments" id="nav-investments">Investimentos</a>
         <a href="#purchases" id="nav-compras">Compras</a>
-        <a>Contas</a>
-        <a>Extrato</a>
-        <a>Orçamento</a>
+        <span>Contas</span>
+        <span>Extrato</span>
+        <span>Orçamento</span>
       </nav>
       <main class="app-main">
         <p class="caption">Synthetic demo dataset (Banco Aurora / Banco Meridian) — no real financial data.</p>
@@ -183,8 +184,12 @@
         purchases: "page-purchases"
       };
       function show(name) {
-        document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
-        document.querySelectorAll(".app-nav a").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll(".page").forEach((el) => {
+          el.classList.remove("active");
+        });
+        document.querySelectorAll(".app-nav a").forEach((el) => {
+          el.classList.remove("active");
+        });
         document.getElementById(pages[name] || pages.dashboard).classList.add("active");
         const nav = document.getElementById("nav-" + (name === "purchases" ? "compras" : name));
         if (nav) nav.classList.add("active");
