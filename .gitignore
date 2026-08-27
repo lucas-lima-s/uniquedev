@@ -1,5 +1,6 @@
 node_modules/
 dist/
+docker-compose.override.yml
 *.tsbuildinfo
 .env
 .env.*.local

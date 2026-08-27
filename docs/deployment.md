@@ -16,10 +16,12 @@ your reverse proxy / tunnel (optional, your choice of tool)
 
 `docker-compose.yml` defines `db`, `api` and `caddy`, pinned to
 the compose project name `haven` so volumes do not depend on the
-checkout path. Port `8080` is published on the host for local checks; in a
-real deployment nothing else needs to be exposed — whatever sits in front
-(a tunnel, a load balancer, a reverse proxy on the same box) only needs to
-reach `caddy:80` on the compose network.
+checkout path. The committed compose file publishes `8080` on all host
+interfaces for local demo. On a host that sits behind a tunnel, copy
+`docker-compose.override.example.yml` to `docker-compose.override.yml`
+(gitignored) so Caddy binds `127.0.0.1:8080` only. Whatever sits in front
+(a tunnel, a load balancer, a reverse proxy on the same box) then reaches
+that loopback port, or `caddy:80` on the compose network.
 
 ## One-time setup
 
@@ -49,10 +51,32 @@ that ships one.
 This repository intentionally does not commit to one exposure method. A
 Cloudflare Tunnel, a Tailscale Funnel, an ngrok tunnel, or a plain reverse
 proxy with a certificate all work the same way from Caddy's point of view:
-something reaches `caddy:80` on the compose network. If you use a tunnel
-client as a container, add it as an extra service in a local, gitignored
-compose override (`docker-compose.override.yml`) rather than committing
-your tunnel name or token anywhere in this repository.
+something reaches Caddy on the host loopback or `caddy:80` on the compose
+network. If you use a tunnel client as a container, add it as an extra
+service in a local, gitignored compose override
+(`docker-compose.override.yml`) rather than committing your tunnel name or
+token anywhere in this repository.
+
+### Identity-aware proxy and Pluggy webhooks
+
+`POST /webhooks` and `GET /health` are unauthenticated inside the API
+process. The identity-aware proxy in front of the SPA must still let the
+data provider reach the webhook. With Cloudflare Access, add a **Bypass**
+policy for `/api/webhooks*` (and `/api/health` if the tunnel health check
+hits that path). Without it, Pluggy receives a login redirect instead of
+`200` and the ledger never updates.
+
+Register the same URL in the Pluggy dashboard and in `WEBHOOK_PUBLIC_URL`:
+
+```
+https://<your-hostname>/api/webhooks?token=<WEBHOOK_SECRET>
+```
+
+Do not commit the hostname or the secret. `AUTH_MODE=dev` is refused when
+`NODE_ENV=production`; production uses `AUTH_MODE=proxy` plus JWKS values
+from the proxy (for Cloudflare Access: certs URL, issuer, and application
+AUD). Do not run `node dist/seed/demo.js` against a production Pluggy
+database — that seed is the synthetic demo dataset.
 
 ## Sub-path routing
 
@@ -76,13 +100,17 @@ prefix.
 | `DATA_PROVIDER` | always | `mock` (deterministic synthetic dataset, no account needed) or `pluggy` (real Open Finance Brasil sync). |
 | `PLUGGY_CLIENT_ID`, `PLUGGY_CLIENT_SECRET` | required when `DATA_PROVIDER=pluggy` | From `dashboard.pluggy.ai`. |
 | `WEBHOOK_SECRET` | always | Shared secret for `POST /webhooks`, min 16 chars. |
-| `WEBHOOK_PUBLIC_URL` | required when `DATA_PROVIDER=pluggy` | The URL you register with the data provider. |
+| `WEBHOOK_PUBLIC_URL` | required when `DATA_PROVIDER=pluggy` | Public webhook URL, including `?token=`. Same value as in the Pluggy dashboard. |
 | `RECONCILE_CRON` / `SNAPSHOT_CRON` | no | Cron expressions for the two scheduled jobs. |
 
 ## Deploying an update
 
 ```bash
 git pull
-docker compose up -d --build
-docker compose run --rm api node dist/migrate.js
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.override.yml run --rm api node dist/migrate.js
 ```
+
+If there is no override file, omit `-f docker-compose.override.yml`. Never
+forward host port 8080 through the home router when a tunnel already
+reaches loopback.
